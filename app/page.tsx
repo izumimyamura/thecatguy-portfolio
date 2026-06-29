@@ -29,23 +29,20 @@ export default function Home() {
         quantity={100}
       />
       <h1 className="py-3.5 px-0.5 z-10 text-4xl text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-display sm:text-6xl md:text-9xl whitespace-nowrap bg-clip-text ">
-        chronark
+        THE CAT GUY
       </h1>
 
       <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
-      <div className="my-16 text-center animate-fade-in">
-        <h2 className="text-sm text-zinc-500 ">
-          I'm building{" "}
-          <Link
-            target="_blank"
-            href="https://unkey.com"
-            className="underline duration-500 hover:text-zinc-300"
-          >
-            unkey.com
-          </Link>, the developer platform for modern APIs. Deploy APIs instantly, route traffic through global gateways, and understand usage in one place.
+      <div className="my-16 text-center animate-fade-in max-w-2xl px-4">
+        <h2 className="text-sm text-zinc-500 leading-relaxed">
+          Cinematic Video Editor specializing in high-energy post-production using{" "}
+          <span className="text-zinc-300 font-medium">DaVinci Resolve, Adobe Premiere Pro, After Effects</span>, and <span className="text-zinc-300 font-medium">Apple Motion</span>. 
+          <br /><br />
+          Also a tech enthusiast and developer proficient in backend and frontend structures like{" "}
+          <span className="text-zinc-300 font-medium">C, C++, Java, Python, HTML, CSS, JavaScript,</span> and <span className="text-zinc-300 font-medium">MySQL</span>, matching technical precision with creative assets like dynamic presentation layouts and high-vibrancy posters crafted in{" "}
+          <span className="text-zinc-300 font-medium">Apple Keynote</span> and <span className="text-zinc-300 font-medium">Canva</span>.
         </h2>
       </div>
     </div>
   );
-
 }
