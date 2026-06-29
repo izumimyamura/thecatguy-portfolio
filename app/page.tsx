@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Particles from "./components/particles";
 
 const navigation = [
@@ -9,29 +9,66 @@ const navigation = [
 ];
 
 export default function Home() {
-  const [scrollProgress, setScrollProgress] = useState(0);
+  // We use Refs to talk directly to the browser, bypassing React's bulky render cycle
+  const titleRef = useRef<HTMLDivElement>(null);
+  const bioRef = useRef<HTMLDivElement>(null);
+  const promptRef = useRef<HTMLDivElement>(null);
 
-  // This tracks how far the user has scrolled down the page
   useEffect(() => {
+    let currentScroll = 0;
+    let targetScroll = 0;
+    let animationFrameId: number;
+
+    // Just capture the target position on scroll
     const handleScroll = () => {
-      const totalScroll = window.scrollY;
-      const windowHeight = window.innerHeight;
-      // Normalizes scroll into a 0 to 1 percentage
-      const progress = Math.min(totalScroll / (windowHeight * 0.8), 1);
-      setScrollProgress(progress);
+      targetScroll = window.scrollY;
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // The animation loop that runs 60 frames per second
+    const updateAnimation = () => {
+      // LERP (Linear Interpolation): This creates that smooth, heavy Apple-style gliding inertia
+      currentScroll += (targetScroll - currentScroll) * 0.08;
+
+      const windowHeight = window.innerHeight;
+      let progress = Math.min(currentScroll / (windowHeight * 0.8), 1);
+      progress = Math.max(0, progress); 
+
+      // Apply the math directly to the elements
+      if (titleRef.current) {
+        titleRef.current.style.opacity = Math.max(1 - progress * 2.5, 0).toString();
+        titleRef.current.style.transform = `scale(${1 + progress * 0.8})`;
+        titleRef.current.style.pointerEvents = progress > 0.5 ? 'none' : 'auto';
+      }
+
+      if (bioRef.current) {
+        const bioOpacity = progress < 0.2 ? 0 : Math.min((progress - 0.2) * 2, 1);
+        bioRef.current.style.opacity = bioOpacity.toString();
+        bioRef.current.style.transform = `translateY(${60 - progress * 60}px)`;
+        bioRef.current.style.pointerEvents = progress < 0.5 ? 'none' : 'auto';
+      }
+
+      if (promptRef.current) {
+        promptRef.current.style.opacity = Math.max(1 - progress * 4, 0).toString();
+      }
+
+      animationFrameId = requestAnimationFrame(updateAnimation);
+    };
+
+    updateAnimation();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
     <div className="relative min-h-[200vh] bg-gradient-to-tl from-black via-zinc-600/20 to-black">
       
-      {/* STICKY CONTAINER: Locks the view in place while we scroll the 200vh invisible body */}
       <div className="sticky top-0 flex flex-col items-center justify-center w-screen h-screen overflow-hidden">
         
-        {/* Navigation */}
         <nav className="absolute top-16 animate-fade-in z-50">
           <ul className="flex items-center justify-center gap-4">
             {navigation.map((item) => (
@@ -46,36 +83,28 @@ export default function Home() {
           </ul>
         </nav>
 
-        {/* Particle Background */}
         <Particles
           className="absolute inset-0 -z-10 animate-fade-in"
           quantity={100}
         />
 
-        {/* MAIN TITLE - Scales up and fades out as you scroll */}
+        {/* MAIN TITLE */}
+        {/* Notice we removed the conflicting CSS transitions so JS can do its job flawlessly */}
         <div 
-          className="absolute flex flex-col items-center justify-center w-full transition-transform duration-75"
-          style={{
-            opacity: 1 - scrollProgress * 2.5, 
-            transform: `scale(${1 + scrollProgress * 0.8})`, 
-            pointerEvents: scrollProgress > 0.5 ? 'none' : 'auto'
-          }}
+          ref={titleRef}
+          className="absolute flex flex-col items-center justify-center w-full"
         >
           <div className="hidden w-screen h-px animate-glow md:block animate-fade-left bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
-          <h1 className="py-3.5 px-0.5 z-10 text-4xl text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-display sm:text-6xl md:text-9xl whitespace-nowrap bg-clip-text">
+          <h1 className="py-3.5 px-0.5 z-10 text-4xl text-transparent bg-white cursor-default text-edge-outline font-display sm:text-6xl md:text-9xl whitespace-nowrap bg-clip-text">
             THE CAT GUY
           </h1>
           <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
         </div>
 
-        {/* BIO TEXT - Slides up and fades in as you scroll */}
+        {/* BIO TEXT */}
         <div 
-          className="absolute flex flex-col items-center justify-center w-full max-w-2xl px-4 text-center transition-all duration-75"
-          style={{
-            opacity: scrollProgress < 0.2 ? 0 : (scrollProgress - 0.2) * 2, 
-            transform: `translateY(${60 - scrollProgress * 60}px)`, 
-            pointerEvents: scrollProgress < 0.5 ? 'none' : 'auto'
-          }}
+          ref={bioRef}
+          className="absolute flex flex-col items-center justify-center w-full max-w-2xl px-4 text-center opacity-0"
         >
           <h2 className="text-sm sm:text-base text-zinc-400 leading-relaxed drop-shadow-md">
             Cinematic Video Editor specializing in high-energy post-production using{" "}
@@ -89,10 +118,10 @@ export default function Home() {
         
       </div>
 
-      {/* Subtle Scroll Down Prompt at the bottom of the first screen */}
+      {/* Scroll Down Prompt */}
       <div 
+        ref={promptRef}
         className="fixed bottom-10 left-1/2 -translate-x-1/2 text-zinc-600 text-xs tracking-widest uppercase animate-pulse pointer-events-none"
-        style={{ opacity: 1 - scrollProgress * 4 }}
       >
         Scroll Down
       </div>
