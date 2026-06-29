@@ -2,6 +2,10 @@
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
 import Particles from "./components/particles";
+import dynamic from "next/dynamic";
+
+// Dynamically import the 3D Lanyard to prevent Next.js server-side rendering errors
+const Lanyard = dynamic(() => import('./components/lanyard'), { ssr: false });
 
 const navigation = [
   { name: "Projects", href: "/projects" },
@@ -88,14 +92,19 @@ export default function Home() {
           quantity={100}
         />
 
+        {/* 3D LANYARD COMPONENT INSTALLED HERE */}
+        <div className="absolute inset-0 z-10">
+          <Lanyard />
+        </div>
+
         {/* MAIN TITLE */}
         {/* Notice we removed the conflicting CSS transitions so JS can do its job flawlessly */}
         <div 
           ref={titleRef}
-          className="absolute flex flex-col items-center justify-center w-full"
+          className="absolute flex flex-col items-center justify-center w-full z-20 pointer-events-none"
         >
           <div className="hidden w-screen h-px animate-glow md:block animate-fade-left bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
-          <h1 className="py-3.5 px-0.5 z-10 text-4xl text-transparent bg-white cursor-default text-edge-outline font-display sm:text-6xl md:text-9xl whitespace-nowrap bg-clip-text">
+          <h1 className="py-3.5 px-0.5 z-10 text-4xl text-transparent bg-white cursor-default text-edge-outline font-display sm:text-6xl md:text-9xl whitespace-nowrap bg-clip-text drop-shadow-2xl">
             THE CAT GUY
           </h1>
           <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
@@ -104,7 +113,7 @@ export default function Home() {
         {/* BIO TEXT */}
         <div 
           ref={bioRef}
-          className="absolute flex flex-col items-center justify-center w-full max-w-2xl px-4 text-center opacity-0"
+          className="absolute flex flex-col items-center justify-center w-full max-w-2xl px-4 text-center opacity-0 z-30 pointer-events-none"
         >
           <h2 className="text-sm sm:text-base text-zinc-400 leading-relaxed drop-shadow-md">
             Cinematic Video Editor specializing in high-energy post-production using{" "}
